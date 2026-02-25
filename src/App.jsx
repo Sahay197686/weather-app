@@ -10,11 +10,13 @@ import { twMerge } from 'tailwind-merge'
 
 function App() {
     const [searchInput, setSearchInput] = useState('')
-    const { loading, error, weatherData, view, setView, fetchWeather } = useWeather();
+    const { loading, error, weatherData, view, setView, fetchWeather, demoMode } = useWeather();
 
     useEffect(() => {
-        fetchWeather('New York'); // Initial search
-    }, [fetchWeather]);
+        if (!weatherData) {
+            fetchWeather('New York'); // Initial search
+        }
+    }, [fetchWeather, weatherData]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -110,27 +112,45 @@ function App() {
                             <Loader2 className="animate-spin text-blue-400" size={48} />
                             <p className="text-white/40 font-bold uppercase tracking-widest text-xs">Syncing with satellites...</p>
                         </div>
-                    ) : error ? (
+                    ) : error && !weatherData ? (
                         <div className="flex-1 flex flex-col items-center justify-center gap-6 p-10 glass-morphism rounded-[2rem] border-red-500/20">
                             <AlertCircle className="text-red-400" size={64} />
                             <div className="text-center">
                                 <h3 className="text-2xl font-bold text-white mb-2">System Alert</h3>
                                 <p className="text-white/40 max-w-md mx-auto">{error}</p>
-                                {error.toLowerCase().includes('network error') && (
+                                {error.toLowerCase().includes('limit') && (
                                     <p className="text-blue-400/60 text-xs mt-4 max-w-xs mx-auto">
-                                        Tip: Weatherstack free tier may require HTTP. Ensure your browser allows insecure content on localhost or upgrade your plan.
+                                        Tip: You've reached the API limit. Please wait or upgrade your plan.
                                     </p>
                                 )}
                                 <button
                                     onClick={() => fetchWeather('New York')}
                                     className="mt-8 px-8 py-3 bg-white/10 rounded-xl text-white font-bold hover:bg-white/20 transition-all"
                                 >
-                                    Return to Dashboard
+                                    Retry Connection
                                 </button>
                             </div>
                         </div>
                     ) : weatherData ? (
                         <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Demo Mode / Alert Banner */}
+                            {(demoMode || error) && (
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 backdrop-blur-md">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+                                        <p className="text-xs font-bold text-blue-300 uppercase tracking-widest">
+                                            {error ? `System: ${error}` : 'Satellite Link: Synthetic Demo Data Active'}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => fetchWeather(location?.name || 'New York')}
+                                        className="text-[10px] text-white/40 hover:text-white font-black uppercase tracking-tighter transition-colors"
+                                    >
+                                        Re-Sync Now
+                                    </button>
+                                </div>
+                            )}
+
                             {/* Dynamic View Header */}
                             <div className="flex items-center gap-4">
                                 <div className="h-8 w-1.5 bg-blue-500 rounded-full"></div>
@@ -150,6 +170,9 @@ function App() {
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <MapPin size={16} className="text-blue-400" />
                                                     <span className="text-blue-400 font-black text-xs uppercase tracking-widest">Target Node</span>
+                                                    {demoMode && (
+                                                        <span className="ml-2 px-2 py-0.5 rounded-md bg-blue-500 text-[8px] font-black text-white uppercase tracking-widest">Demo</span>
+                                                    )}
                                                 </div>
                                                 <h3 className="text-6xl font-black text-white tracking-tighter">
                                                     {location?.name}
@@ -218,13 +241,21 @@ function App() {
 
                                 {view === 'current' ? (
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                                        {['Visibility', 'Pressure', 'Precip', 'UV'].map((label, idx) => (
-                                            <div key={label} className="flex flex-col gap-3">
-                                                <span className="text-white/20 text-[10px] font-bold uppercase tracking-wider">{label}</span>
+                                        {[
+                                            { label: 'Visibility', val: current?.visibility, max: 20 },
+                                            { label: 'Pressure', val: current?.pressure, max: 1100, min: 900 },
+                                            { label: 'Precip', val: current?.precip, max: 10 },
+                                            { label: 'UV', val: current?.uv_index, max: 11 }
+                                        ].map((item, idx) => (
+                                            <div key={item.label} className="flex flex-col gap-3">
+                                                <span className="text-white/20 text-[10px] font-bold uppercase tracking-wider">{item.label}</span>
                                                 <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-gradient-to-r from-blue-500/40 to-indigo-500/40 rounded-full transition-all duration-1000" style={{ width: `${(idx + 1) * 20}%` }}></div>
+                                                    <div
+                                                        className="h-full bg-gradient-to-r from-blue-500/40 to-indigo-500/40 rounded-full transition-all duration-1000"
+                                                        style={{ width: `${Math.min(100, (item.val / item.max) * 100)}%` }}
+                                                    ></div>
                                                 </div>
-                                                <p className="text-xs font-bold text-white/40">{(idx + 1) * 25}% Optimal</p>
+                                                <p className="text-xs font-bold text-white/40">{item.val} Units</p>
                                             </div>
                                         ))}
                                     </div>
