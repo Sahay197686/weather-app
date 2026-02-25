@@ -1,10 +1,13 @@
 import axios from 'axios';
 
 const API_KEY = '138bd856302dc20b711782fe7fb5d528';
-const BASE_URL = 'http://api.weatherstack.com';
+// Try using https by default to avoid Mixed Content issues. 
+// If the API key is free-tier, Weatherstack returns a JSON error instead of a network error.
+const BASE_URL = 'https://api.weatherstack.com';
 
 const apiClient = axios.create({
     baseURL: BASE_URL,
+    timeout: 10000, // Add timeout
     params: {
         access_key: API_KEY,
     },

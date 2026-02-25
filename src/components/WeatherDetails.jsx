@@ -1,5 +1,6 @@
 import React from 'react';
 import { Wind, Droplets, Cloud, Thermometer, Eye, Sun } from 'lucide-react';
+import { twMerge } from 'tailwind-merge';
 
 const DetailItem = ({ icon: Icon, label, value, colorClass }) => (
     <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col justify-between transition-all hover:bg-white/10 group">
@@ -10,8 +11,6 @@ const DetailItem = ({ icon: Icon, label, value, colorClass }) => (
         </div>
     </div>
 );
-
-import { twMerge } from 'tailwind-merge';
 
 const WeatherDetails = ({ current }) => {
     if (!current) return null;

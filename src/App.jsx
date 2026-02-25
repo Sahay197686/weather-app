@@ -111,8 +111,13 @@ function App() {
                         <div className="flex-1 flex flex-col items-center justify-center gap-6 p-10 glass-morphism rounded-[2rem] border-red-500/20">
                             <AlertCircle className="text-red-400" size={64} />
                             <div className="text-center">
-                                <h3 className="text-2xl font-bold text-white mb-2">Access Restricted</h3>
+                                <h3 className="text-2xl font-bold text-white mb-2">System Alert</h3>
                                 <p className="text-white/40 max-w-md mx-auto">{error}</p>
+                                {error.toLowerCase().includes('network error') && (
+                                    <p className="text-blue-400/60 text-xs mt-4 max-w-xs mx-auto">
+                                        Tip: Weatherstack free tier may require HTTP. Ensure your browser allows insecure content on localhost or upgrade your plan.
+                                    </p>
+                                )}
                                 <button
                                     onClick={() => fetchWeather('New York')}
                                     className="mt-8 px-8 py-3 bg-white/10 rounded-xl text-white font-bold hover:bg-white/20 transition-all"
