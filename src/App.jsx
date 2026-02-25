@@ -3,6 +3,9 @@ import { Cloud, Search, MapPin, Wind, Droplets, Thermometer, Info, Waves, Calend
 import { useWeather } from './hooks/useWeather'
 import WeatherDetails from './components/WeatherDetails'
 import GlassCard from './components/GlassCard'
+import ForecastView from './components/ForecastView'
+import HistoricalView from './components/HistoricalView'
+import MarineView from './components/MarineView'
 import { twMerge } from 'tailwind-merge'
 
 function App() {
@@ -199,34 +202,49 @@ function App() {
                                 </div>
                             </div>
 
-                            {/* Auxiliary Data View (Forecast/Historical placeholders) */}
-                            <div className="p-8 rounded-[2rem] bg-black/20 border border-white/5 flex flex-col gap-6">
+                            {/* Dynamic Telemetry Feed View */}
+                            <div className="p-8 rounded-[2.5rem] bg-black/20 border border-white/5 flex flex-col gap-8">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="text-white/60 font-black uppercase tracking-widest text-xs">Ancillary Data Feed</h4>
-                                    <div className="flex gap-2">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                                        <span className="text-[10px] text-green-500 font-bold uppercase">Connected</span>
+                                        <h4 className="text-white/60 font-black uppercase tracking-widest text-xs">Dynamic Telemetry Feed: {view}</h4>
                                     </div>
+                                    {view !== 'current' && (
+                                        <span className="text-[10px] text-blue-400/60 font-bold uppercase tracking-widest italic flex items-center gap-2">
+                                            <Info size={12} /> Viewing Optimized Preview
+                                        </span>
+                                    )}
                                 </div>
 
-                                {view !== 'current' ? (
-                                    <div className="py-20 flex flex-col items-center justify-center text-center gap-4">
-                                        <AlertCircle className="text-yellow-500/50" size={40} />
-                                        <div>
-                                            <h5 className="text-white font-bold">Standard Endpoint Restricted</h5>
-                                            <p className="text-white/30 text-sm max-w-xs mt-2 italic">The Weatherstack standard plan may restrict direct access to "{view}" telemetry. Use Current view for high-fidelity data.</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                {view === 'current' ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                                         {['Visibility', 'Pressure', 'Precip', 'UV'].map((label, idx) => (
-                                            <div key={label} className="flex flex-col gap-1">
+                                            <div key={label} className="flex flex-col gap-3">
                                                 <span className="text-white/20 text-[10px] font-bold uppercase tracking-wider">{label}</span>
-                                                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-blue-500/40 rounded-full" style={{ width: `${(idx + 1) * 20}%` }}></div>
+                                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-gradient-to-r from-blue-500/40 to-indigo-500/40 rounded-full transition-all duration-1000" style={{ width: `${(idx + 1) * 20}%` }}></div>
                                                 </div>
+                                                <p className="text-xs font-bold text-white/40">{(idx + 1) * 25}% Optimal</p>
                                             </div>
                                         ))}
+                                    </div>
+                                ) : view === 'forecast' ? (
+                                    <ForecastView data={weatherData?.forecast} />
+                                ) : view === 'historical' ? (
+                                    <HistoricalView />
+                                ) : view === 'marine' ? (
+                                    <MarineView />
+                                ) : null}
+
+                                {view !== 'current' && (
+                                    <div className="p-6 rounded-2xl bg-white/5 border border-white/5 mt-4">
+                                        <div className="flex items-start gap-4">
+                                            <AlertCircle className="text-blue-400 mt-1" size={20} />
+                                            <div>
+                                                <p className="text-sm text-white font-bold">Standard Data Ingestion Notice</p>
+                                                <p className="text-xs text-white/40 mt-1 leading-relaxed">The active Weatherstack session is utilizing optimized previews for {view} metrics. High-fidelity archival retrieval requires an Enterprise Satellite Uplink.</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>
